@@ -3,6 +3,9 @@ package com.bryanmarty.saferide;
 import com.bryanmarty.saferide.R;
 import com.bryanmarty.saferide.R.layout;
 import com.bryanmarty.saferide.activities.SafeRideHomeScreenActivity;
+import com.bryanmarty.saferide.fmcsa.Carrier;
+import com.bryanmarty.saferide.fmcsa.PassengerCarrier;
+import com.bryanmarty.saferide.fmcsa.PassengerCarrier.VehicleType;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,6 +22,7 @@ public class SafeRideActivity extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		PassengerCarrier.query("44691", VehicleType.Motorcoach, "");
 		Intent i = new Intent(this, SafeRideHomeScreenActivity.class);
 		startActivity(i);
 	}
