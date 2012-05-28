@@ -6,6 +6,7 @@ import com.bryanmarty.saferide.activities.SafeRideHomeScreenActivity;
 import com.bryanmarty.saferide.fmcsa.Carrier;
 import com.bryanmarty.saferide.fmcsa.PassengerCarrier;
 import com.bryanmarty.saferide.fmcsa.PassengerCarrier.VehicleType;
+import com.bryanmarty.saferide.managers.GPSManager;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -23,6 +24,8 @@ public class SafeRideActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		PassengerCarrier.query("44691", VehicleType.Motorcoach, "");
+		GPSManager gps = GPSManager.getInstance(this);
+		gps.starListening();
 		Intent i = new Intent(this, SafeRideHomeScreenActivity.class);
 		startActivity(i);
 	}

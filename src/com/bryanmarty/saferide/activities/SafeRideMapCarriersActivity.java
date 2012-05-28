@@ -1,6 +1,10 @@
 package com.bryanmarty.saferide.activities;
 
+import com.bryanmarty.saferide.MapOverlay;
 import com.bryanmarty.saferide.R;
+import com.bryanmarty.saferide.google.location.GoogleLocation;
+import com.bryanmarty.saferide.managers.GPSListener;
+import com.bryanmarty.saferide.managers.GPSManager;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -13,12 +17,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
-public class SafeRideMapCarriersActivity extends MapActivity {
+public class SafeRideMapCarriersActivity extends MapActivity implements GPSListener {
 
 	private MapController mapController_;
+	private MapView mapView_;
+	private GPSManager gpsManager_;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,43 +34,28 @@ public class SafeRideMapCarriersActivity extends MapActivity {
 		
 		setContentView(R.layout.map);
 		
-		MapView mapView = (MapView) findViewById(R.id.carrierMap);
-		mapController_ = mapView.getController();
+		mapView_ = (MapView) findViewById(R.id.carrierMap);
+		mapController_ = mapView_.getController();
 		mapController_.setZoom(9);
+		mapView_.setSatellite(true);
+		mapView_.setBuiltInZoomControls(true);
 		
-		mapView.setBuiltInZoomControls(true);
+		gpsManager_ = GPSManager.getInstance(this);
+		gpsManager_.addListener(this);
 		
-		
-		// Acquire a reference to the system Location Manager
-		LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		LocationListener locationListener = new LocationListener() {
+		Location loc = gpsManager_.getBestKnownLocation();
+		if(loc != null) {
+			setLocation(loc);
+			mapView_.getOverlays().add(new MapOverlay(R.drawable.kingpin, GPSManager.convertToGeoPoint(loc), this));
+		} else {
+			gpsManager_.starListening();
+		}
+	}
 
-			@Override
-			public void onLocationChanged(Location location) {
-				setLocation(location);
-			}
-
-			@Override
-			public void onProviderDisabled(String provider) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onProviderEnabled(String provider) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onStatusChanged(String provider, int status,
-					Bundle extras) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
-		// Register the listener with the Location Manager to receive location updates
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+	@Override
+	protected void onDestroy() {
+		gpsManager_.removeListener(this);
+		super.onDestroy();
 	}
 
 	@Override
@@ -72,9 +64,19 @@ public class SafeRideMapCarriersActivity extends MapActivity {
 	}
 	
 	public void setLocation(Location loc) {
-		int lat = (int) (loc.getLatitude() * 1E6);
-		int log = (int) (loc.getLongitude() * 1E6);
-		mapController_.animateTo(new GeoPoint(lat,log));		
+		mapView_.getOverlays().add(new MapOverlay(R.drawable.kingpin, GPSManager.convertToGeoPoint(loc), this));
+		mapController_.animateTo(GPSManager.convertToGeoPoint(loc));
+		mapController_.setZoom(19);
+		Log.i("Zipcode",GoogleLocation.getZipcode(loc));
 	}
+
+	@Override
+	public void onNewLocation(Location location) {
+		if(location != null) {
+			setLocation(location);	
+		}
+	}
+	
+	
 
 }

@@ -45,4 +45,11 @@ public class Carrier {
 		return name + ", " + principalLocation +", " + vehicleType.toString() + ", " + allowedToOperate + ", " + DOT;
 	}
 	
+	public String getCleanedName() {
+		String clean = name;
+		clean = clean.replace('.',' ');
+		clean = clean.replace(',',' ');
+		return clean;
+	}
+	
 }
