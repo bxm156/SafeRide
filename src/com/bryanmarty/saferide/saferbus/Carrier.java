@@ -3,7 +3,9 @@ package com.bryanmarty.saferide.saferbus;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Carrier {
+import com.bryanmarty.saferide.interfaces.CarrierListItem;
+
+public class Carrier implements CarrierListItem {
 	public String allowToOperate;
 	public int busVehicle;
 	public List<CarrierMeasure> CarrierMeasure = new ArrayList<CarrierMeasure>();
@@ -24,4 +26,9 @@ public class Carrier {
 	public String phyZip;
 	public String telephone;
 	public int vanVehicle;
+	
+	
+	public String getName() {
+		return legalName;
+	}
 }

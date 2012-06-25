@@ -25,7 +25,7 @@ public class SafeRideMapCarriersActivity extends MapActivity implements GPSListe
 
 	private MapController mapController_;
 	private MapView mapView_;
-	private GPSManager gpsManager_;
+	private GPSManager gpsManager_ = GPSManager.getInstance(this);;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +39,6 @@ public class SafeRideMapCarriersActivity extends MapActivity implements GPSListe
 		mapController_.setZoom(9);
 		mapView_.setSatellite(true);
 		mapView_.setBuiltInZoomControls(true);
-		
-		gpsManager_ = GPSManager.getInstance(this);
 		gpsManager_.addListener(this);
 		
 		Location loc = gpsManager_.getBestKnownLocation();
@@ -48,7 +46,7 @@ public class SafeRideMapCarriersActivity extends MapActivity implements GPSListe
 			setLocation(loc);
 			mapView_.getOverlays().add(new MapOverlay(R.drawable.kingpin, GPSManager.convertToGeoPoint(loc), this));
 		} else {
-			gpsManager_.starListening();
+			gpsManager_.startListening();
 		}
 	}
 
@@ -76,6 +74,20 @@ public class SafeRideMapCarriersActivity extends MapActivity implements GPSListe
 			setLocation(location);	
 		}
 	}
+
+	@Override
+	protected void onPause() {
+		gpsManager_.stopListening();
+		super.onPause();
+	}
+	
+	@Override
+	protected void onResume() {
+		gpsManager_.startListening();
+		super.onResume();
+	}
+	
+	
 	
 	
 

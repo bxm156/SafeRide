@@ -1,116 +1,156 @@
 package com.bryanmarty.saferide.fmcsa;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.LinkedList;
-import java.util.List;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.TagNode;
-import org.htmlcleaner.XPatherException;
+import com.bryanmarty.saferide.fmcsa.FMCSAScrapper.VehicleType;
+import com.bryanmarty.saferide.interfaces.CarrierListItem;
 
-import android.util.Log;
+public class PassengerCarrier implements CarrierListItem {
 
-public class PassengerCarrier {
-	//http://www.fmcsa.dot.gov/safety-security/PCS/Consumers.aspx
+	/* Search Table */
+	public String name = "";
+	public String principalLocation = "";
+	public VehicleType vehicleType = VehicleType.Motorcoach;
+	public URL detailPage;
+	public boolean allowedToOperate = false;
 	
-	public enum VehicleType {
-		Motorcoach, Limousine
+	/* Details */
+	public String companyName_;
+	public String dba_;
+	public String dot_;
+	public String mcNumber_;
+	public String address_;
+	public String mailingAddress_;
+	public String telephone_;
+	public String fax_;
+	public int motorcoaches_;
+	public int schoolBuses_;
+	public int miniBusesVans_;
+	public int limousines_;
+	public boolean outOfService_ = false;
+	public String outOfServiceDate_;
+
+
+	
+	public String getName() {
+		return name;
 	}
-
-	private static final String WEB_URL =
-		"http://ai.fmcsa.dot.gov/PassengerSearch/SearchResults.aspx?LocationCode=1&LocationValue=" +
-			"%s&VehicleType=%s&keyword=%s&Submit=Find+Carriers";  //Zipcode, Vehicle Type, Keyword
-	
-	private static final String XPATH_QUERY = "//table[@id='ctl00_ContentPlaceHolder1_gvCarrier']/tbody/tr";
-	
-	public static LinkedList<Carrier> query(String zipcode, VehicleType vehicleType, String keyword) {
-		try {
-			String urlString = String.format(WEB_URL, zipcode, vehicleType.toString(),keyword);
-			URL url = new URL(urlString);
-			
-			HtmlCleaner cleaner = new HtmlCleaner();
-			CleanerProperties props = cleaner.getProperties();
-			props.setAllowHtmlInsideAttributes(true);
-			props.setAllowMultiWordAttributes(true);
-			props.setRecognizeUnicodeChars(true);
-			props.setOmitComments(true);
-			
-			URLConnection connection = url.openConnection();
-			
-			TagNode node;
-			node = cleaner.clean(new InputStreamReader(connection.getInputStream()));
-			
-			System.out.println(node.toString());
-			
-			Object[] row_nodes = node.evaluateXPath(XPATH_QUERY);
-			LinkedList<Carrier> carrierList = new LinkedList<Carrier>();
-			for(Object n : row_nodes) {
-				Carrier c = processRow((TagNode)n);
-				if(c != null) {
-					c.setVehicleType(vehicleType);
-					carrierList.add(c);
-				}
-			}
-
-			return carrierList;
-
-		} catch (MalformedURLException mue) {
-			mue.printStackTrace();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} catch (XPatherException xe) {
-			xe.printStackTrace();
-		}
-		return null;
-		
+	public void setName(String name) {
+		this.name = name;
+	}
+	public URL getDetailPage() {
+		return detailPage;
+	}
+	public void setDetailPage(URL detailPage) {
+		this.detailPage = detailPage;
+	}
+	public VehicleType getVehicleType() {
+		return vehicleType;
+	}
+	public void setVehicleType(VehicleType vehicleType) {
+		this.vehicleType = vehicleType;
+	}
+	public String getPrincipalLocation() {
+		return principalLocation;
+	}
+	public void setPrincipalLocation(String principalLocation) {
+		this.principalLocation = principalLocation;
+	}
+	public boolean isAllowedToOperate() {
+		return allowedToOperate;
+	}
+	public void setAllowedToOperate(boolean allowedToOperate) {
+		this.allowedToOperate = allowedToOperate;
 	}
 	
-	private static Carrier processRow(TagNode tr) {
-		try {
-			TagNode[] td_list = tr.getAllElements(false);
-			if(!validateRow(td_list)) {
-				return null;
-			}
-			//First TD
-			TagNode carrierLinkNode = (TagNode) td_list[0].getChildren().get(0);
-			URL carrierLink = new URL("http://ai.fmcsa.dot.gov/PassengerSearch/" + carrierLinkNode.getAttributeByName("href"));
-			String dot = "";
-			List<NameValuePair> params = URLEncodedUtils.parse(carrierLink.toURI(),"application/x-www-form-urlencoded");
-			for(NameValuePair nvp : params) {
-				if(nvp.getName().contentEquals("DOT")) {
-					dot=nvp.getValue();
-				}
-			}
-			String carrierName = carrierLinkNode.getChildren().iterator().next().toString().trim();
-			
-			//Second TD
-			String carrierLocation = ((TagNode) td_list[1]).getChildren().iterator().next().toString().trim();
-			
-			//Fourth TD
-			String allowedToOperate = ((TagNode) td_list[3]).getChildren().iterator().next().toString().trim();
-			
-			Carrier carrier = new Carrier();
-			carrier.setName(carrierName);
-			carrier.setPrincipalLocation(carrierLocation);
-			carrier.setAllowedToOperate(allowedToOperate.contentEquals("Yes"));
-			carrier.setDOT(dot);
-			
-			return carrier;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	/* Details */
+	public String getCompanyName_() {
+		return companyName_;
+	}
+	public void setCompanyName_(String companyName) {
+		this.companyName_ = companyName;
+	}
+	public String getDBA() {
+		return dba_;
+	}
+	public void setDBA(String DBA) {
+		this.dba_ = DBA;
+	}
+	public String getDOT() {
+		return dot_;
+	}
+	public void setDOT(String DOT) {
+		this.dot_ = DOT;
+	}
+	public String getMCNumber() {
+		return mcNumber_;
+	}
+	public void setMCNumber(String mcNumber) {
+		this.mcNumber_ = mcNumber;
+	}
+	public String getAddress_() {
+		return address_;
+	}
+	public void setAddress(String address) {
+		this.address_ = address;
+	}
+	public String getMailingAddress() {
+		return mailingAddress_;
+	}
+	public void setMailingAddress_(String mailingAddress) {
+		this.mailingAddress_ = mailingAddress;
+	}
+	public String getTelephone() {
+		return telephone_;
+	}
+	public void setTelephone(String telephone) {
+		this.telephone_ = telephone;
+	}
+	public String getFax() {
+		return fax_;
+	}
+	public void setFax(String fax) {
+		this.fax_ = fax;
+	}
+	public int getMotorcoaches() {
+		return motorcoaches_;
+	}
+	public void setMotorcoaches(int motorcoaches) {
+		this.motorcoaches_ = motorcoaches;
+	}
+	public int getSchoolBuses() {
+		return schoolBuses_;
+	}
+	public void setSchoolBuses(int schoolBuses) {
+		this.schoolBuses_ = schoolBuses;
+	}
+	public int getMiniBusesVans() {
+		return miniBusesVans_;
+	}
+	public void setMiniBusesVans(int miniBusesVans) {
+		this.miniBusesVans_ = miniBusesVans;
+	}
+	public int getLimousines() {
+		return limousines_;
+	}
+	public void setLimousines(int limousines) {
+		this.limousines_ = limousines;
+	}
+	public boolean isOutOfService() {
+		return outOfService_;
+	}
+	public void setOutOfService(boolean outOfService) {
+		this.outOfService_ = outOfService;
+	}
+	public String getOutOfServiceDate() {
+		return outOfServiceDate_;
+	}
+	public void setOutOfServiceDate(String outOfServiceDate) {
+		this.outOfServiceDate_ = outOfServiceDate;
 	}
 	
-	private static boolean validateRow(TagNode[] td) {
-		return (td.length == 4);
+	@Override
+	public String toString() {
+		return name + ", " + principalLocation +", " + vehicleType.toString() + ", " + allowedToOperate;
 	}
-	
 }

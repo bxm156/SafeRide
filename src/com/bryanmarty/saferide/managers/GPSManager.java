@@ -121,7 +121,7 @@ public class GPSManager {
 		};
 	}
 	
-	public void starListening() {
+	public void startListening() {
 		locationManager_.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeBetweenGPSUpdates, minDistanceBetweenGPSUpdates, gpsListener_);
 		locationManager_.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTimeBetweenWiFiUpdates, minDistanceBetweenWifiUpdates, wifiListener_);
 		listening_ = true;

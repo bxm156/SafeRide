@@ -1,7 +1,9 @@
 package com.bryanmarty.saferide.adapters;
 
 import java.util.ArrayList;
-import com.bryanmarty.saferide.saferbus.Carrier;
+import java.util.List;
+
+import com.bryanmarty.saferide.interfaces.CarrierListItem;
 
 import com.bryanmarty.saferide.R;
 import android.content.Context;
@@ -11,15 +13,21 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class CarrierAdapter extends ArrayAdapter<Carrier> {
+public class CarrierAdapter extends ArrayAdapter<CarrierListItem> {
 	
-	private ArrayList<Carrier> items_;
+	private ArrayList<CarrierListItem> items_;
 	private Context context_;
 
-	public CarrierAdapter(Context context, int textViewResourceId, ArrayList<Carrier> items) {
+	public CarrierAdapter(Context context, int textViewResourceId, ArrayList<CarrierListItem> items) {
 		super(context, textViewResourceId, items);
 		items_ = items;
 		context_ = context;
+	}
+	
+	public void setCarrierList(List<CarrierListItem> items) {
+		items_.clear();
+		items_.addAll(items);
+		setNotifyOnChange(true);
 	}
 
 	@Override
@@ -29,11 +37,11 @@ public class CarrierAdapter extends ArrayAdapter<Carrier> {
 			LayoutInflater vi = (LayoutInflater) context_.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = vi.inflate(R.layout.carrier_list_item, null);
 		}
-		Carrier c = items_.get(position);
+		CarrierListItem c = items_.get(position);
 		if (c != null ) {
 			TextView tv = (TextView) v.findViewById(R.id.carrier_list_carrier_name);
 			if(tv != null) {
-				tv.setText(c.legalName);
+				tv.setText(c.getName());
 			}
 		}
 		return v;
