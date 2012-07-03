@@ -29,9 +29,7 @@ public class SafeRideMapCarriersActivity extends MapActivity implements GPSListe
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		
 		setContentView(R.layout.map);
 		
 		mapView_ = (MapView) findViewById(R.id.carrierMap);
@@ -65,7 +63,6 @@ public class SafeRideMapCarriersActivity extends MapActivity implements GPSListe
 		mapView_.getOverlays().add(new MapOverlay(R.drawable.kingpin, GPSManager.convertToGeoPoint(loc), this));
 		mapController_.animateTo(GPSManager.convertToGeoPoint(loc));
 		mapController_.setZoom(19);
-		Log.i("Zipcode",GoogleLocation.getZipcode(loc));
 	}
 
 	@Override

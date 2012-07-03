@@ -2,6 +2,7 @@ package com.bryanmarty.saferide.activities;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.bryanmarty.saferide.R;
 import com.bryanmarty.saferide.adapters.CarrierAdapter;
@@ -9,10 +10,13 @@ import com.bryanmarty.saferide.fmcsa.FMCSAScrapper;
 import com.bryanmarty.saferide.fmcsa.PassengerCarrier;
 import com.bryanmarty.saferide.fmcsa.FMCSAScrapper.VehicleType;
 import com.bryanmarty.saferide.google.location.GoogleLocation;
+import com.bryanmarty.saferide.interfaces.AsyncTaskListener;
 import com.bryanmarty.saferide.interfaces.CarrierListItem;
+import com.bryanmarty.saferide.managers.DataManager;
 import com.bryanmarty.saferide.managers.GPSManager;
 import com.bryanmarty.saferide.saferbus.SaferBus;
 import com.bryanmarty.saferide.saferbus.SaferBusResponse;
+import com.bryanmarty.saferide.tasks.FMCSADownloadTask;
 
 import android.app.Activity;
 import android.location.Location;
@@ -31,21 +35,24 @@ public class SafeRideListCarriersActivity extends Activity implements OnItemClic
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.carrier_list);
         ListView listView = (ListView) findViewById(R.id.carrier_list_view);
-        SaferBusResponse res = SaferBus.getCarrierByName("greyhound");
-        carrierList = new ArrayList<CarrierListItem>(res.Carriers.Carrier);
+        carrierList = new ArrayList<CarrierListItem>();
+        DataManager manager = DataManager.getInstance();
+        if( manager.getData() != null) {
+        	carrierList = new ArrayList<CarrierListItem>(manager.getData());
+        } else {
+        	populateFromLocation(gpsManager_.getBestKnownLocation());
+        }
         cAdapter = new CarrierAdapter(this, R.layout.carrier_list_item, carrierList);
         listView.setAdapter(cAdapter);
         listView.setOnItemClickListener(this);
-        super.onCreate(savedInstanceState);
 	}
 	
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Location location = gpsManager_.getBestKnownLocation();
-		populateFromLocation(location);
 	}
 
 	@Override
@@ -73,15 +80,55 @@ public class SafeRideListCarriersActivity extends Activity implements OnItemClic
 	public void populateFromLocation(Location location) {
 		String zipcode = null;
 		if(location != null) {
-			zipcode = GoogleLocation.getZipcode(location);
+			zipcode = "44106"; //GoogleLocation.getZipcode(location);
 		}
 		if(zipcode == null) {
 			return;
 		}
-		LinkedList<PassengerCarrier> carrierList = FMCSAScrapper.query(zipcode, VehicleType.Motorcoach, null);
-		LinkedList<CarrierListItem> carrierListItems = new LinkedList<CarrierListItem>(carrierList);
-		cAdapter.clear();
-		cAdapter.setCarrierList(carrierListItems);
+		
+		
+		AsyncTaskListener<String, List<PassengerCarrier>, List<PassengerCarrier>> listener = new AsyncTaskListener<String, List<PassengerCarrier>, List<PassengerCarrier>>() {
+
+			@Override
+			public void onCancelled() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onPreExecute() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onProgressUpdate(final List<PassengerCarrier>... progress) {
+				SafeRideListCarriersActivity.this.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if(progress != null) {
+							LinkedList<CarrierListItem> carrierListItems = new LinkedList<CarrierListItem>(progress[0]);
+							cAdapter.clear();
+							cAdapter.setCarrierList(carrierListItems);
+						}
+					}
+				});
+				
+			}
+
+			@Override
+			public void onPostExecute(List<PassengerCarrier> result) {
+				if(result != null) {
+					LinkedList<CarrierListItem> carrierListItems = new LinkedList<CarrierListItem>(result);
+					cAdapter.clear();
+					cAdapter.setCarrierList(carrierListItems);
+				}
+			}
+			
+		};
+		
+		FMCSADownloadTask zipDownload = new FMCSADownloadTask(listener);
+		zipDownload.execute(zipcode, VehicleType.Motorcoach.name(), null);
 		/*
 		LinkedList<Carrier> listItems = new LinkedList<Carrier>();
 		

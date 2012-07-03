@@ -3,5 +3,6 @@
 
     <string name="hello">Hello World, SafeRideActivity!</string>
     <string name="app_name">SafeRide</string>
+    <string name="loading">Loading</string>
 
 </resources>
